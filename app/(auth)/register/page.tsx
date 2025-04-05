@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { AuthForm } from "@/components/custom/auth-form";
 import { SubmitButton } from "@/components/custom/submit-button";
 
-import { register, RegisterActionState } from "../actions";
+import { register, type RegisterActionState } from "../actions";
 
 export default function Page() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function Page() {
     register,
     {
       status: "idle",
-    },
+    }
   );
 
   useEffect(() => {

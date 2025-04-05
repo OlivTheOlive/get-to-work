@@ -1,7 +1,7 @@
-import { convertToCoreMessages, Message, streamText } from "ai";
+import { convertToCoreMessages, type Message, streamText } from "ai";
 import { z } from "zod";
 
-import { geminiProModel } from "@/ai";
+import { geminiFlashModel } from "@/ai";
 import {
   generateReservationPrice,
   generateSampleFlightSearchResults,
@@ -29,11 +29,11 @@ export async function POST(request: Request) {
   }
 
   const coreMessages = convertToCoreMessages(messages).filter(
-    (message) => message.content.length > 0,
+    (message) => message.content.length > 0
   );
 
   const result = await streamText({
-    model: geminiProModel,
+    model: geminiFlashModel,
     system: `\n
         - you help users book flights!
         - keep your responses limited to a sentence.
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         }),
         execute: async ({ latitude, longitude }) => {
           const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`
           );
 
           const weatherData = await response.json();
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
 
           const id = generateUUID();
 
-          if (session && session.user && session.user.id) {
+          if (session?.user?.id) {
             await createReservation({
               id,
               userId: session.user.id,
@@ -145,11 +145,10 @@ export async function POST(request: Request) {
             });
 
             return { id, ...props, totalPriceInUSD };
-          } else {
-            return {
-              error: "User is not signed in to perform this action!",
-            };
           }
+          return {
+            error: "User is not signed in to perform this action!",
+          };
         },
       },
       authorizePayment: {
@@ -176,9 +175,8 @@ export async function POST(request: Request) {
 
           if (reservation.hasCompletedPayment) {
             return { hasCompletedPayment: true };
-          } else {
-            return { hasCompletedPayment: false };
           }
+          return { hasCompletedPayment: false };
         },
       },
       displayBoardingPass: {
@@ -215,7 +213,7 @@ export async function POST(request: Request) {
       },
     },
     onFinish: async ({ responseMessages }) => {
-      if (session.user && session.user.id) {
+      if (session.user?.id) {
         try {
           await saveChat({
             id,
